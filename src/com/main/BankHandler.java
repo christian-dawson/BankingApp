@@ -1,15 +1,11 @@
 package com.main;
 
-import static org.hamcrest.CoreMatchers.containsString;
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 import com.exceptions.*;
 
@@ -17,12 +13,12 @@ public class BankHandler implements Serializable{
 	
 	private static final String FILE_NAME = "data.txt";
 	
-	private List<Application> applications;
-	private List<Account> accounts;
-	private List<User> users;
+	private ArrayList<Application> applications;
+	private ArrayList<Account> accounts;
+	private ArrayList<User> users;
 	
-	static private String uniqueAppID;
-	static private String uniqueAccID;
+	private String uniqueAppID;
+	private String uniqueAccID;
 	
 	private static BankHandler handler;
 	
@@ -60,8 +56,11 @@ public class BankHandler implements Serializable{
 			System.out.println("writing error");
 		}
 	}
-	public void apply(Customer customer, Customer ... partner) {
-		receiveApplication(new Application(uniqueAppID(),customer, partner));
+	public void apply(Customer a, Customer b) {
+		applications.add(new Application(uniqueAppID(),a,b));
+	}
+	public void apply(Customer a) {
+		applications.add(new Application(uniqueAppID(),a));
 	}
 	public ArrayList<Account> viewAccounts(Customer customer) throws CustomerDoesNotExistException{
 		for(User user : users) {
@@ -71,14 +70,40 @@ public class BankHandler implements Serializable{
 		}
 		throw new CustomerDoesNotExistException();
 	}
+	public Application selectApplication(String ID) throws ApplicationNotFoundException {
+		for(Application app : applications) {
+			if(app.getID().equals(ID)) {
+				return app;
+			}
+		}
+		throw new ApplicationNotFoundException();
+	}
 	
-	public void register(User requestUser) throws UserAlreadyExistsException {
+	public void register(String name, String pass, String type) throws UserAlreadyExistsException, InvalidUserTypeException {
+		User toAdd;
+		switch(type.toLowerCase()) {
+			case "customer" : {
+				toAdd = new Customer(name, pass);
+				break;
+			}
+			case "employee" : {
+				toAdd = new Employee(name, pass);
+				break;
+			}
+			case "admin" : {
+				toAdd = new Admin(name, pass);
+				break;
+			}
+			default : {
+				throw new InvalidUserTypeException();
+			}
+		}
 		for(User user : users) {
-			if(user.checkUserName(requestUser.getUserName())) {
+			if(user.checkUserName(toAdd.getUserName())) {
 				throw new UserAlreadyExistsException();
 			}
 		}
-		users.add(requestUser);
+		users.add(toAdd);
 	}
 	public User authenticateUser(String userName, String password) throws UserAuthenticationException {
 		for(User user : users) {
@@ -99,40 +124,56 @@ public class BankHandler implements Serializable{
 	public void removeAccount(Account account) {
 		accounts.remove(account);
 	}
-	public void receiveApplication(Application application) {
-		applications.add(application);
-	}
 	public void approveApplication(Application application) {
 		addAccount(new Account(uniqueAccID(), application.applicants()));
+		applications.remove(application);
 	}
 	public void denyApplication(Application application) {
 		applications.remove(application);
 	}
-	public List<Account> getAccounts(){
-		return accounts;
+	public void deposit(Account account, int amount) {
+		account.deposit(amount);
 	}
-	public List<Application> getApplications(){
-		return applications;
+	public void withdraw(Account account, int amount) throws InsufficientFundsException {
+		account.withdraw(amount);
 	}
-	public List<User> getUsers(){
-		return users;
+	public void transfer(Account from, Account to, int amount) throws InsufficientFundsException {
+		from.withdraw(amount);
+		to.deposit(amount);
+		
 	}
-	static private String uniqueAppID() {
+	public String viewApplications() {
+		String toReturn = "";
+		for(Application app : applications) {
+			toReturn = toReturn.concat(app.toString() + "\n");
+		}
+		return toReturn;
+	}
+	public String viewAccounts() {
+		String toReturn = "";
+		for(Account acc : accounts) {
+			toReturn = toReturn.concat(acc.toString() + "\n");
+		}
+		return toReturn;
+	}
+	private String uniqueAppID() {
 		String toReturn = ((Integer.parseInt(uniqueAppID)+1) + "");
 		for(int i = 1; i <= 10; i++) {
-			if(uniqueAppID.length() < i) {
-				uniqueAppID = "0"+toReturn;
+			if(toReturn.length() < i) {
+				toReturn = "0"+toReturn;
 			}
 		}
-		return uniqueAccID;
+		uniqueAppID = toReturn;
+		return uniqueAppID;
 	}
-	static private String uniqueAccID() {
+	private String uniqueAccID() {
 		String toReturn = ((Integer.parseInt(uniqueAccID)+1) + "");
 		for(int i = 1; i <= 10; i++) {
-			if(uniqueAccID.length() < i) {
-				uniqueAccID = "0"+toReturn;
+			if(toReturn.length() < i) {
+				toReturn = "0"+toReturn;
 			}
 		}
+		uniqueAccID = toReturn;
 		return uniqueAccID;
 	}
 }
