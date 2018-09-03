@@ -21,6 +21,7 @@ public class BankHandler implements Serializable{
 	
 	private static BankHandler handler;
 	
+	//BankHandler Setup
 	private BankHandler() {
 		uniqueAppID = "0";
 		uniqueAccID = "0";
@@ -55,6 +56,10 @@ public class BankHandler implements Serializable{
 			System.out.println("writing error");
 		}
 	}
+	
+	
+	//Interactive functions
+	
 	public void apply(Customer a, Customer b) throws CustomerSimilarityException {
 		if(a == b) {
 			throw new CustomerSimilarityException();
@@ -131,9 +136,21 @@ public class BankHandler implements Serializable{
 			customer.addAccount(account);
 		}
 	}
-	public void removeAccount(Account account) {
+	public void removeAccount(Account account) throws AccountNotFoundException {
 		for(Customer customer : account.getOwners()) {
 			customer.removeAccount(account);
+		}
+	}
+	public void removeUser(String userName) throws UserNotFoundException {
+		boolean fail = true;
+		for(User user : users) {
+			if(userName.equals(user.getUserName())) {
+				users.remove(user);
+				fail = false;
+			}
+		}
+		if(fail) {
+			throw new UserNotFoundException();
 		}
 	}
 	public void approveApplication(Application application) {

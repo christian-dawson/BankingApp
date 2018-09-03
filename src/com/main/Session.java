@@ -73,7 +73,18 @@ public class Session {
 			}
 			break;
 		}
-		case "approve" : {
+		case "select account" : {
+			System.out.println("Please enter the ID of the account you wish to select");
+			String accID = in.nextLine();
+			try {
+				account = bank.selectAccount(accID);
+			}
+			catch (AccountNotFoundException e) {
+				System.out.println("ERROR: Invalid account ID");
+			}
+			break;
+		}
+		case "approve application" : {
 			if(application == null) {
 				System.out.println("Please select an application you wish to approve");
 			}
@@ -84,7 +95,7 @@ public class Session {
 			}
 			break;
 		}
-		case "deny" : {
+		case "deny appication" : {
 			if(application == null) {
 				System.out.println("Please select an application you wish to approve");
 			}
@@ -95,8 +106,74 @@ public class Session {
 			}
 			break;
 		}
-		case "select account" : {
-			
+		case "remove account" : {
+			try {
+				bank.removeAccount(account);
+				System.out.println("Account removal successful");
+			}
+			catch(AccountNotFoundException ex) {
+				System.out.println("The selected account does not belong to any customer");
+			}
+			break;
+		}
+		case "deposit" : {
+			if(account == null) {
+				System.out.println("Please select an account into which you want to deposit using the \"select\" keyword");
+			}
+			else {
+				System.out.println("Please enter how much money you wish to deposit");
+				String number = in.nextLine();
+				try {
+					int amount = Integer.parseInt(number);
+					bank.deposit(account, amount);
+				}
+				catch(Exception ex) {
+					ex.printStackTrace();
+					System.out.println("The amount should only contian numbers and should be a whole number");
+				}
+			}
+			break;
+		}
+		case "transfer" : {
+			if(account == null) {
+				System.out.println("Please select an account into which you want to transfer from using the \"select\" keyword");
+			}
+			else {
+				System.out.println("Please enter how much money you wish to transfer from this account");
+				String number = in.nextLine();
+				try {
+					int amount = Integer.parseInt(number);
+				}
+				catch(Exception ex) {
+					System.out.println("The amount should only contian numbers and should be a whole number");
+				}
+			}
+			break;
+		}
+		case "withdraw" : {
+			if(account == null) {
+				System.out.println("Please select an account from which you want to make a withdrawl using the \"select\" keyword");
+			}
+		}
+		case "remove user" : {
+			System.out.println("Plesae enter the UserName of the user you wish to remove");
+			String userName = in.nextLine();
+			try {
+				bank.removeUser(userName);
+			}
+			catch(UserNotFoundException ex) {
+				System.out.println("The enetered UserName does not belong to a User");
+			}
+		}
+		case "logout" : {
+			user = null;
+			userAuthenticated = false;
+			break;
+		}
+		default : {
+			System.out.println("possible commands include \"view applications, view accounts, \n"
+					+ "select application, select account, aprove application, deny, \n"
+					+ "remove account, withdraw, deposit, transfer, logout");
 			break;
 		}
 		}
