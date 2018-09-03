@@ -14,7 +14,6 @@ public class BankHandler implements Serializable{
 	private static final String FILE_NAME = "data.txt";
 	
 	private ArrayList<Application> applications;
-	private ArrayList<Account> accounts;
 	private ArrayList<User> users;
 	
 	private String uniqueAppID;
@@ -23,9 +22,9 @@ public class BankHandler implements Serializable{
 	private static BankHandler handler;
 	
 	private BankHandler() {
-		uniqueAppID = "000000";
+		uniqueAppID = "0";
+		uniqueAccID = "0";
 		applications = new ArrayList<>();
-		accounts = new ArrayList<>();
 		users = new ArrayList<>();
 	}
 	public static BankHandler getInstance() {
@@ -56,19 +55,28 @@ public class BankHandler implements Serializable{
 			System.out.println("writing error");
 		}
 	}
-	public void apply(Customer a, Customer b) {
+	public void apply(Customer a, Customer b) throws CustomerSimilarityException {
+		if(a == b) {
+			throw new CustomerSimilarityException();
+		}
 		applications.add(new Application(uniqueAppID(),a,b));
 	}
 	public void apply(Customer a) {
 		applications.add(new Application(uniqueAppID(),a));
 	}
-	public ArrayList<Account> viewAccounts(Customer customer) throws CustomerDoesNotExistException{
+	public String viewAccounts(Customer customer) throws CustomerDoesNotExistException{
+		String toReturn = "";
+		if(!users.contains(customer)) {
+			throw new CustomerDoesNotExistException();
+		}
 		for(User user : users) {
 			if(user.checkUserName(customer.getUserName())){
-				return customer.getAccounts();
+				for(Account acc : ((Customer)user).getAccounts()) {
+					toReturn += "\n" + acc.toString();
+				}
 			}
 		}
-		throw new CustomerDoesNotExistException();
+		return toReturn;
 	}
 	public Application selectApplication(String ID) throws ApplicationNotFoundException {
 		for(Application app : applications) {
@@ -119,10 +127,14 @@ public class BankHandler implements Serializable{
 		users.remove(user);
 	}
 	public void addAccount(Account account) {
-		accounts.add(account);
+		for(Customer customer : account.getOwners()) {
+			customer.addAccount(account);
+		}
 	}
 	public void removeAccount(Account account) {
-		accounts.remove(account);
+		for(Customer customer : account.getOwners()) {
+			customer.removeAccount(account);
+		}
 	}
 	public void approveApplication(Application application) {
 		addAccount(new Account(uniqueAccID(), application.applicants()));
@@ -142,6 +154,26 @@ public class BankHandler implements Serializable{
 		to.deposit(amount);
 		
 	}
+	public Account selectAccount(String ID) throws AccountNotFoundException{
+		for(User user : users) {
+			if(user instanceof Customer) {
+				for(Account acc : ((Customer)user).getAccounts()) {
+					if(acc.getID().equals(ID)) {
+						return acc;
+					}
+				}
+			}
+		}
+		throw new AccountNotFoundException();
+	}
+	public Account selectAccount(Customer customer, String ID) throws AccountNotFoundException {
+		for(Account acc : customer.getAccounts()) {
+			if(acc.getID().equals(ID)) {
+				return acc;
+			}
+		}
+		throw new AccountNotFoundException();
+	}
 	public String viewApplications() {
 		String toReturn = "";
 		for(Application app : applications) {
@@ -151,8 +183,12 @@ public class BankHandler implements Serializable{
 	}
 	public String viewAccounts() {
 		String toReturn = "";
-		for(Account acc : accounts) {
-			toReturn = toReturn.concat(acc.toString() + "\n");
+		for(User user : users) {
+			if(user instanceof Customer) {
+				for(Account acc : ((Customer)user).getAccounts()) {
+					toReturn = toReturn.concat(acc.toString() + "\n");
+				}
+			}
 		}
 		return toReturn;
 	}

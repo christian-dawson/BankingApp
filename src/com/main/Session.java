@@ -1,7 +1,5 @@
 package com.main;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 import com.exceptions.*;
@@ -98,6 +96,7 @@ public class Session {
 			break;
 		}
 		case "select account" : {
+			
 			break;
 		}
 		}
@@ -111,14 +110,12 @@ public class Session {
 		
 		case "view accounts":{
 			try {
-				ArrayList<Account> accs = bank.viewAccounts((Customer)user);
-				if(accs == null) {
+				String accs = bank.viewAccounts((Customer)user);
+				if(accs == "") {
 					System.out.println("You have no active accounts, please apply for one");
+					break;
 				}
-				System.out.println("Account #   |   Balance");
-				for(Account acc : accs) {
-					System.out.println(acc.getID() + "  |  " + acc.getBalance());
-				}
+				System.out.println(accs);
 			} catch (CustomerDoesNotExistException e) {
 				System.out.println("ERROR: Your user account no longer exists!");
 			}
@@ -129,19 +126,10 @@ public class Session {
 			System.out.println("Please enter the account # of the account you are trying to access");
 			String accountNum = in.nextLine();
 			try {
-				for(Account acc : bank.viewAccounts((Customer)(user))) {
-					account = null;
-					if(accountNum == acc.getID()) {
-						account = acc;
-						break;
-					}
-				}
-				if(account == null) {
-					System.out.println("ERROR: You do not have an account with that number!");
-				}
+				account = bank.selectAccount((Customer)(user), accountNum);
 			}
-			catch(CustomerDoesNotExistException ex) {
-				System.out.println("ERROR: Your user account no longer exists!");
+			catch(AccountNotFoundException ex) {
+				System.out.println("ERROR: Invalid account #");
 			}
 			break;
 		}
@@ -200,6 +188,9 @@ public class Session {
 					}
 					catch(UserAuthenticationException ex) {
 						System.out.println("User Authentication ERROR: Partner login information is incorrect");
+					}
+					catch(CustomerSimilarityException ex) {
+						System.out.println("The application must have seperate owners");
 					}
 					
 				}

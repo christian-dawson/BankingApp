@@ -10,6 +10,7 @@ public class Account implements Serializable {
 	private String ID;
 	private ArrayList<Customer> owners;
 	public Account(String ID, ArrayList<Customer> customers) {
+		owners = new ArrayList<Customer>();
 		this.ID = ID;
 		for(Customer customer : customers) {
 			owners.add(customer);
@@ -17,6 +18,9 @@ public class Account implements Serializable {
 	}
 	public String getID() {
 		return ID;
+	}
+	public ArrayList<Customer> getOwners(){
+		return owners;
 	}
 	public int getBalance() {
 		return balance;
@@ -35,7 +39,7 @@ public class Account implements Serializable {
 		for(Customer c : owners) {
 			toReturn += c.getUserName() + " ";
 		}
-		toReturn += "| balance: " + balance;
+		toReturn += "| balance: " + balance + " | ID: " + ID;
 		return toReturn;
 	}
 }
