@@ -160,7 +160,7 @@ public class BankHandler implements Serializable{
 	public void denyApplication(Application application) {
 		applications.remove(application);
 	}
-	public void deposit(Account account, int amount) {
+	public void deposit(Account account, int amount) throws IllegalArgumentException {
 		account.deposit(amount);
 	}
 	public void withdraw(Account account, int amount) throws InsufficientFundsException {

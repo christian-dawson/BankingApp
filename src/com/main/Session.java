@@ -42,7 +42,7 @@ public class Session {
 	}
 	private static void adminMenu() {
 		input = in.nextLine();
-		switch(input) {
+		switch(input.toLowerCase()) {
 		case "view applications" : {
 			String appData = bank.viewApplications();
 			if(appData == "") {
@@ -109,6 +109,7 @@ public class Session {
 		case "remove account" : {
 			try {
 				bank.removeAccount(account);
+				account = null;
 				System.out.println("Account removal successful");
 			}
 			catch(AccountNotFoundException ex) {
@@ -154,6 +155,21 @@ public class Session {
 			if(account == null) {
 				System.out.println("Please select an account from which you want to make a withdrawl using the \"select\" keyword");
 			}
+			else {
+				System.out.println("Please enter an amount you wish to withdraw");
+				String number = in.nextLine();
+				try {
+					int amount = Integer.parseInt(number);
+					bank.withdraw(account, amount);
+				}
+				catch(IllegalArgumentException ex) {
+					System.out.println("ERROR: A withdraw amount must be a positive whole number!");
+				}
+				catch(InsufficientFundsException ex) {
+					System.out.println("ERROR: Insufficient funds!");
+				}
+			}
+			break;
 		}
 		case "remove user" : {
 			System.out.println("Plesae enter the UserName of the user you wish to remove");
@@ -172,45 +188,78 @@ public class Session {
 		}
 		default : {
 			System.out.println("possible commands include \"view applications, view accounts, \n"
-					+ "select application, select account, aprove application, deny, \n"
-					+ "remove account, withdraw, deposit, transfer, logout");
+					+ "select application, select account, approve application, deny, \n"
+					+ "remove account, remove user, withdraw, deposit, transfer, logout");
 			break;
 		}
 		}
 	}
 	private static void employeeMenu() {
-		
-	}
-	private static void customerMenu() {
 		input = in.nextLine();
-		switch(input) {
-		
-		case "view accounts":{
+		switch(input.toLowerCase()) {
+		case "view applications" : {
+			String appData = bank.viewApplications();
+			if(appData == "") {
+				System.out.println("There are no outstanding applications");
+				break;
+			}
+			System.out.println(appData);
+			break;
+		}
+		case "view accounts" : {
+			String accData = bank.viewAccounts();
+			if(accData == "") {
+				System.out.println("There are no active accounts");
+				break;
+			}
+			System.out.println(accData);
+			break;
+			
+		}
+		case "select application" : {
+			System.out.println("Please enter the ID of the application you wish to select");
+			String appID = in.nextLine();
 			try {
-				String accs = bank.viewAccounts((Customer)user);
-				if(accs == "") {
-					System.out.println("You have no active accounts, please apply for one");
-					break;
-				}
-				System.out.println(accs);
-			} catch (CustomerDoesNotExistException e) {
-				System.out.println("ERROR: Your user account no longer exists!");
+				application = bank.selectApplication(appID);
+			}
+			catch(ApplicationNotFoundException ex) {
+				System.out.println("The ID you entered is not a valid application ID");
 			}
 			break;
 		}
-		
-		case "select":{
-			System.out.println("Please enter the account # of the account you are trying to access");
-			String accountNum = in.nextLine();
+		case "select account" : {
+			System.out.println("Please enter the ID of the account you wish to select");
+			String accID = in.nextLine();
 			try {
-				account = bank.selectAccount((Customer)(user), accountNum);
+				account = bank.selectAccount(accID);
 			}
-			catch(AccountNotFoundException ex) {
-				System.out.println("ERROR: Invalid account #");
+			catch (AccountNotFoundException e) {
+				System.out.println("ERROR: Invalid account ID");
 			}
 			break;
 		}
-		
+		case "approve application" : {
+			if(application == null) {
+				System.out.println("Please select an application you wish to approve");
+			}
+			else {
+				bank.approveApplication(application);
+				System.out.println("Application has been successfully approved!");
+				application = null;
+			}
+			break;
+		}
+		case "deny appication" : {
+			if(application == null) {
+				System.out.println("Please select an application you wish to approve");
+			}
+			else {
+				bank.denyApplication(application);
+				System.out.println("Application has been successfully denied!");
+				application = null;
+			}
+			break;
+		}
 		case "deposit" : {
 			if(account == null) {
 				System.out.println("Please select an account into which you want to deposit using the \"select\" keyword");
@@ -249,6 +298,121 @@ public class Session {
 			if(account == null) {
 				System.out.println("Please select an account from which you want to make a withdrawl using the \"select\" keyword");
 			}
+			else {
+				System.out.println("Please enter an amount you wish to withdraw");
+				String number = in.nextLine();
+				try {
+					int amount = Integer.parseInt(number);
+					bank.withdraw(account, amount);
+				}
+				catch(IllegalArgumentException ex) {
+					System.out.println("ERROR: A withdraw amount must be a positive whole number!");
+				}
+				catch(InsufficientFundsException ex) {
+					System.out.println("ERROR: Insufficient funds!");
+				}
+			}
+			break;
+		}
+		case "logout" : {
+			user = null;
+			userAuthenticated = false;
+			break;
+		}
+		default : {
+			System.out.println("possible commands include \"view applications, view accounts, \n"
+					+ "select application, select account, approve application, deny, \n"
+					+ "withdraw, deposit, transfer, logout");
+			break;
+		}
+		}
+	}
+	private static void customerMenu() {
+		input = in.nextLine();
+		switch(input.toLowerCase()) {
+		
+		case "view accounts":{
+			try {
+				String accs = bank.viewAccounts((Customer)user);
+				if(accs == "") {
+					System.out.println("You have no active accounts, please apply for one");
+					break;
+				}
+				System.out.println(accs);
+			} catch (CustomerDoesNotExistException e) {
+				System.out.println("ERROR: Your user account no longer exists!");
+			}
+			break;
+		}
+		
+		case "select":{
+			System.out.println("Please enter the account # of the account you are trying to access");
+			String accountNum = in.nextLine();
+			try {
+				account = bank.selectAccount((Customer)(user), accountNum);
+			}
+			catch(AccountNotFoundException ex) {
+				System.out.println("ERROR: Invalid account #");
+			}
+			break;
+		}
+		
+		case "deposit" : {
+			if(account == null) {
+				System.out.println("Please select an account into which you want to deposit using the \"select\" keyword");
+			}
+			else {
+				System.out.println("Please enter how much money you wish to deposit");
+				String number = in.nextLine();
+				try {
+					int amount = Integer.parseInt(number);
+					bank.deposit(account, amount);
+				}
+				catch(IllegalArgumentException ex) {
+					System.out.println("ERROR: A deposit must be a positive whole number!");
+				}
+				catch(Exception ex) {
+					ex.printStackTrace();
+					System.out.println("The amount should only contian numbers and should be a whole number");
+				}
+			}
+			break;
+		}
+		case "transfer" : {
+			if(account == null) {
+				System.out.println("Please select an account into which you want to transfer from using the \"select\" keyword");
+			}
+			else {
+				System.out.println("Please enter how much money you wish to transfer from this account");
+				String number = in.nextLine();
+				try {
+					int amount = Integer.parseInt(number);
+				}
+				catch(Exception ex) {
+					System.out.println("The amount should only contian numbers and should be a whole number");
+				}
+			}
+			break;
+		}
+		case "withdraw" : {
+			if(account == null) {
+				System.out.println("Please select an account from which you want to make a withdrawl using the \"select\" keyword");
+			}
+			else {
+				System.out.println("Please enter an amount you wish to withdraw");
+				String number = in.nextLine();
+				try {
+					int amount = Integer.parseInt(number);
+					bank.withdraw(account, amount);
+				}
+				catch(IllegalArgumentException ex) {
+					System.out.println("ERROR: A withdraw amount must be a positive whole number!");
+				}
+				catch(InsufficientFundsException ex) {
+					System.out.println("ERROR: Insufficient funds!");
+				}
+			}
+			break;
 		}
 		case "apply" : {
 			while(true) {
@@ -291,7 +455,7 @@ public class Session {
 			break;
 		}
 		default : {
-			System.out.println("Possible commands include \"deposit, withdraw, transfer, apply, logout\"");
+			System.out.println("Possible commands include \"view accounts, select, deposit, withdraw, transfer, apply, logout\"");
 			break;
 		}
 		
@@ -299,7 +463,7 @@ public class Session {
 	}
 	private static void mainMenu() {
 		input = in.nextLine();
-		switch(input) {
+		switch(input.toLowerCase()) {
 			case "register" : {
 				System.out.print("USERNAME: ");
 				String username = in.nextLine();

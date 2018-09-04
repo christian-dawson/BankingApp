@@ -25,7 +25,10 @@ public class Account implements Serializable {
 	public int getBalance() {
 		return balance;
 	}
-	public void deposit(int amount) {
+	public void deposit(int amount) throws IllegalArgumentException {
+		if(amount < 0) {
+			throw new IllegalArgumentException();
+		}
 		balance += amount;
 	}
 	public void withdraw(int amount) throws InsufficientFundsException {
