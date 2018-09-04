@@ -229,4 +229,11 @@ public class BankHandler implements Serializable{
 		uniqueAccID = toReturn;
 		return uniqueAccID;
 	}
+	
+	public ArrayList<User> getUsers(){
+		return users;
+	}
+	public ArrayList<Application> getApplications(){
+		return applications;
+	}
 }
